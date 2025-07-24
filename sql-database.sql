@@ -67,6 +67,14 @@ from work
 group by style
 order by style_count desc; 
 
+
+
+select 
+		style, 
+		count(distinct work_id) as style_count
+	from work
+    where style is NOT NULL
+	group by style;
 -- Hypothesis 1: The Value of Style
 -- Artworks from certain styles (e.g., Impressionism, Cubism) consistently fetch higher average sale prices than works from other movements 
 -- (e.g., Rococo, Classicism).
@@ -86,7 +94,7 @@ having style_count >= 100
 order by avg_sale_price desc
 limit 10; 
 
--- top 10: Classicism, American Landscape, Orientalism, Art Nouvea, Neo-Classicism, Rococo, Surrealism, American Art, Romanticism, Naturalism
+-- top 10 avg: Classicism, American Landscape, Orientalism, Art Nouvea, Neo-Classicism, Rococo, Surrealism, American Art, Romanticism, Naturalism
 
 -- 2. find median sale price per style to account for outliers
 with ranked_sales as (
@@ -108,6 +116,39 @@ order by median_sale_price desc
 limit 10;
 
 -- top 10 median:  Classicism, Japanese Art, Neo-Classicism, Art Nouveau, Naturalism, Romanticism, Symbolism, Cubism, Nabi, Pointillism
+
+-- Hypothesis 2: The Value of Rarity
+-- The rarer the art style, the higher the price.
+
+with style_counts as(
+	select 
+		style, 
+		count(distinct work_id) as style_count
+	from work
+    where style is NOT NULL
+	group by style
+), 
+median_prices as (
+select
+		ps.sale_price as meidan_sale_price,
+        w.style,
+        ps.sale_price,
+		ROW_NUMBER() OVER (PARTITION BY w.style ORDER BY ps.sale_price) AS rn,
+		COUNT(*) OVER (PARTITION BY w.style) AS total_count
+	from work as w
+	join product_size as ps on w.work_id = ps.work_id
+)
+select
+sc.style,
+sc.style_count,
+mp.sale_price as median_sale_price
+from style_counts as sc
+join median_prices as mp on sc.style = mp.style
+WHERE rn = FLOOR(total_count/2) 
+order by
+sc.style_count asc;
+
+-- Error Code: 1054. Unknown column 'mp.median_sale_price' in 'field list'
 
 
 
