@@ -71,19 +71,44 @@ order by style_count desc;
 -- Artworks from certain styles (e.g., Impressionism, Cubism) consistently fetch higher average sale prices than works from other movements 
 -- (e.g., Rococo, Classicism).
 
+
+-- 1. Find avg sale price per style
+
 select
 	w.style,
     count(distinct w.work_id) as style_count,
-	round(avg(ps.sale_price), 2) as avg_sale_price,
-	round(avg(ps.regular_price), 2) as avg_regular_price
+    round(avg(ps.sale_price), 2) as avg_sale_price
 from work as w
 join product_size as ps on w.work_id = ps.work_id
-where style is NOT NULL
+where style is not null
 group by w.style
 having style_count >= 100
 order by avg_sale_price desc
+limit 10; 
+
+-- top 10: Classicism, American Landscape, Orientalism, Art Nouvea, Neo-Classicism, Rococo, Surrealism, American Art, Romanticism, Naturalism
+
+-- 2. find median sale price per style to account for outliers
+with ranked_sales as (
+	select
+		w.style,
+		ps.sale_price,
+		ROW_NUMBER() OVER (PARTITION BY w.style ORDER BY ps.sale_price) AS rn,
+		COUNT(*) OVER (PARTITION BY w.style) AS total_count
+	from work as w
+	join product_size as ps on w.work_id = ps.work_id
+	where w.style is NOT NULL
+)
+select
+style,
+sale_price as median_sale_price
+from ranked_sales
+where rn = floor(total_count) / 2
+order by median_sale_price desc
 limit 10;
 
--- outcome: Classicism, American
+-- top 10 median:  Classicism, Japanese Art, Neo-Classicism, Art Nouveau, Naturalism, Romanticism, Symbolism, Cubism, Nabi, Pointillism
+
+
 
 
