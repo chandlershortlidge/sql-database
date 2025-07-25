@@ -68,23 +68,21 @@ select
 	count(*) as style_count
 from work
 group by style
-order by style_count asc;
+order by style_count asc; -- smallest Japanese Art 
 
 select 
 	style, 
 	count(*) as style_count
 from work
 group by style
-order by style_count desc; 
-
-
+order by style_count desc; -- largest Impressionism
 
 select 
 		style, 
 		count(distinct work_id) as style_count
 	from work
     where style is NOT NULL
-	group by style;
+	group by style; 
     
 -- --------------------------------    
 -- Hypothesis 1: The Value of Style
@@ -193,6 +191,10 @@ from work as w
 where w.style = "Impressionism"
 ) as nationality_by_sale_price
 WHERE rn = FLOOR(total_count/2);
+
+select style from work;
+
+call sale_price_by_nationality_style("Baroque");
 
 
 
