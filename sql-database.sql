@@ -4,7 +4,7 @@ use famous_paintings;
 select * from canvas_size
 order by label desc;
 
--- dimensions
+-- min, max, avg dimensions
 select 
 max(height) as max_height,
 max(width) as max_width,
@@ -18,7 +18,7 @@ avg(label) as avg_dimensions
 from canvas_size;
 
 
--- price
+-- min, max, avg price
 select sale_price, regular_price 
 from product_size;
 
@@ -31,9 +31,19 @@ round(avg(sale_price), 2) as avg_sale_price,
 round(avg(regular_price), 2) as avg_regular_price
 from product_size;
 
-select * from subject;
+-- top 50 artits by sale price
+select 
+a.artist_id,
+a.full_name,
+a.nationality,
+ps.sale_price
+from artist as a 
+join work as w on a.artist_id = w.artist_id
+join product_size as ps on w.work_id = ps.work_id
+order by sale_price desc
+limit 50;
 
--- count number of painting subjects, order by min, max
+-- view smallest and largest painting subject
 
 select
 	subject,
@@ -41,7 +51,7 @@ select
 from subject
 group by subject
 order by subject_quantity asc
-limit 1;
+limit 1; -- Tigers with 31 paintings
 
 select
 	subject,
@@ -49,7 +59,7 @@ select
 from subject
 group by subject
 order by subject_quantity desc
-limit 1;
+limit 1; -- Portraits with 1070 paintings
 
 -- count number of painting styles, order by min, max
 
@@ -75,10 +85,13 @@ select
 	from work
     where style is NOT NULL
 	group by style;
+    
+-- --------------------------------    
 -- Hypothesis 1: The Value of Style
+-- --------------------------------
+
 -- Artworks from certain styles (e.g., Impressionism, Cubism) consistently fetch higher average sale prices than works from other movements 
 -- (e.g., Rococo, Classicism).
-
 
 -- 1. Find avg sale price per style
 
@@ -117,7 +130,10 @@ limit 10;
 
 -- top 10 median:  Classicism, Japanese Art, Neo-Classicism, Art Nouveau, Naturalism, Romanticism, Symbolism, Cubism, Nabi, Pointillism
 
+-- ---------------------------------
 -- Hypothesis 2: The Value of Rarity
+-- ---------------------------------
+
 -- The rarer the art style, the higher the price.
 
 with style_counts as(
@@ -148,7 +164,35 @@ WHERE rn = FLOOR(total_count/2)
 order by
 sc.style_count asc;
 
--- Error Code: 1054. Unknown column 'mp.median_sale_price' in 'field list'
+-- strong trend between rarity and price
+
+-- -------------------------------------
+-- Hypothesis 3: The Nationality Premium
+-- -------------------------------------
+
+-- Is there a "premium" for artists of a certain nationality? 
+-- For example, do works by French or American artists command higher prices on average 
+-- than works by artists from other countries, even within the same style?
+
+
+select  
+	nationality,
+	style, 
+	sale_price AS median_sale_price
+from  
+(
+select
+        w.style,
+        a.nationality,
+        ps.sale_price,
+		ROW_NUMBER() OVER (PARTITION BY w.style, a.nationality ORDER BY ps.sale_price) AS rn,
+		COUNT(*) OVER (PARTITION BY w.style, a.nationality) AS total_count
+from work as w
+	join product_size as ps on w.work_id = ps.work_id
+    join artist as a on w.artist_id = a.artist_id 
+where w.style = "Impressionism"
+) as nationality_by_sale_price
+WHERE rn = FLOOR(total_count/2);
 
 
 
