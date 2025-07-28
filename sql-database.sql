@@ -202,7 +202,7 @@ call sale_price_by_nationality_style("Baroque");
 call sale_price_by_nationality_style("Expressionism");
 
 
--- 
+-- Top 5 styles, sorted by median sale price and nationality
 
 select  
 	nationality,
@@ -222,6 +222,7 @@ from work as w
  join (
 	select style
     from work
+    where style is not null
     group by style
     order by count(*) desc
     limit 5
@@ -229,8 +230,49 @@ from work as w
 ) as nationality_by_sale_price
 WHERE rn = FLOOR(total_count/2)
 order by 
-style,
 median_sale_price desc;
 
--- Error Code: 1235. This version of MySQL doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery'
+
+-- Last 10 styles, sorted by median sale price and nationality
+select  
+	nationality,
+	style, 
+	sale_price AS median_sale_price
+from  
+(
+select
+        w.style,
+        a.nationality,
+        ps.sale_price,
+		ROW_NUMBER() OVER (PARTITION BY w.style, a.nationality ORDER BY ps.sale_price) AS rn,
+		COUNT(*) OVER (PARTITION BY w.style, a.nationality) AS total_count
+from work as w
+	join product_size as ps on w.work_id = ps.work_id
+    join artist as a on w.artist_id = a.artist_id 
+ join (
+	select style
+    from work
+    where style is not null
+    group by style
+    order by count(*) asc
+    limit 10
+      ) as top_5_styles on w.style = top_5_styles.style
+) as nationality_by_sale_price
+WHERE rn = FLOOR(total_count/2)
+order by 
+median_sale_price desc;
+
+
+select 
+a.full_name,
+w.name,
+ps.sale_price
+from artist as a
+join work as w on a.artist_id = w.artist_id
+join product_size as ps on w.work_id = ps.work_id
+order by sale_price desc;
+
+
+
+
 
