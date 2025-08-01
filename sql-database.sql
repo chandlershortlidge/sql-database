@@ -318,6 +318,42 @@ with artist_lifespan as (
 		(death - birth) as lifespan
 	from artist
     where (death - birth) > 10 -- remove artist mistakenly labled as living only 5 years
+)
+select
+case
+	when lifespan between 20 and 24 then 'Age 20 - 24'
+    when lifespan between 25 and 29 then 'Age 25 - 29'
+    when lifespan between 30 and 34 then 'Age 30 - 34'
+    when lifespan between 35 and 39 then 'Age 35 - 39'
+    when lifespan between 40 and 44 then 'Age 40 - 44'
+    when lifespan between 45 and 49 then 'Age 45 - 49'
+    when lifespan between 50 and 54 then 'Age 50 - 54'
+    when lifespan between 55 and 59 then 'Age 55 - 59'
+    when lifespan between 60 and 64 then 'Age 60 - 65'
+    when lifespan between 65 and 69 then 'Age 65 - 69'
+    when lifespan between 70 and 74 then 'Age 70 - 74'
+    when lifespan between 75 and 79 then 'Age 75 - 79'
+    when lifespan between 80 and 84 then 'Age 80 - 84'
+    when lifespan between 85 and 89 then 'Age 85 - 89'
+    when lifespan between 90 and 94 then 'Age 90 - 94'
+	else 'Age 95+'
+end as age_groups,
+count(*) as number_of_artists_per_age
+from artist_lifespan
+group by age_groups
+order by age_groups;
+-- top age groups: 65 - 69; 70 - 74; 
+
+
+
+
+with artist_lifespan as (
+	select
+		full_name,
+        artist_id,
+		(death - birth) as lifespan
+	from artist
+    where (death - birth) > 10 -- remove artist mistakenly labled as living only 5 years
 ),
 artist_age_groups as (
 select
@@ -345,7 +381,7 @@ from artist_lifespan
 )
 select
 	aag.age_groups,
-	round(avg(ps.sale_price), 2) as avg_sale_price
+	round(avg(ps.sale_price), 2) as avg_sale_price_per_age_group
 from 
 	product_size as ps
 join work as w on ps.work_id = w.work_id
@@ -354,7 +390,18 @@ group by
 	aag.age_groups
 order by 
 	aag.age_groups;
+    
+-- ------------------------------------
+-- Hypothesis 6: Subject Matter & Price
+-- ------------------------------------
+-- The subject of a painting significantly impacts its value.
 
--- Error Code: 1140. In aggregated query without GROUP BY, expression #1 of SELECT list contains nonaggregated column 'artist_lifespan.artist_id'; this is incompatible with sql_mode=only_full_group_by
+
+select 
+subject,
+count(subject) as subject_count
+from subject
+group by subject
+order by subject_count desc;
 
 
