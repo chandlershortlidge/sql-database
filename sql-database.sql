@@ -319,10 +319,27 @@ with artist_lifespan as (
     where (death - birth) > 10 -- remove artist mistakenly labled as living only 5 years
 )
 select
-	min(lifespan) as minium_age,
-    max(lifespan) as maximum_age
+case
+	when lifespan between 20 and 24 then 'Age 20 - 24'
+    when lifespan between 25 and 29 then 'Age 25 - 29'
+    when lifespan between 30 and 34 then 'Age 30 - 34'
+    when lifespan between 35 and 39 then 'Age 35 - 39'
+    when lifespan between 40 and 44 then 'Age 40 - 44'
+    when lifespan between 45 and 49 then 'Age 45 - 49'
+    when lifespan between 50 and 54 then 'Age 50 - 54'
+    when lifespan between 55 and 59 then 'Age 55 - 59'
+    when lifespan between 60 and 64 then 'Age 60 - 65'
+    when lifespan between 65 and 69 then 'Age 65 - 69'
+    when lifespan between 70 and 74 then 'Age 70 - 74'
+    when lifespan between 75 and 79 then 'Age 75 - 79'
+    when lifespan between 80 and 84 then 'Age 80 - 84'
+    when lifespan between 85 and 89 then 'Age 85 - 89'
+    when lifespan between 90 and 94 then 'Age 90 - 94'
+	else 'Age 95+'
+end as age_groups,
+count(*) as number_of_artists_per_age
 from artist_lifespan
-order by lifespan;
+group by age_groups
+order by age_groups;
 
-
-
+-- Error Code: 1055. Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'artist_lifespan.lifespan' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
