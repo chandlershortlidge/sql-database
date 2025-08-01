@@ -314,11 +314,15 @@ order by avg_lifespan; -- avg lifespan of all artists is 66 years old
 with artist_lifespan as (
 	select
 		full_name,
+        artist_id,
 		(death - birth) as lifespan
 	from artist
     where (death - birth) > 10 -- remove artist mistakenly labled as living only 5 years
-)
+),
+artist_age_groups as (
 select
+	artist_id,
+	full_name,
 case
 	when lifespan between 20 and 24 then 'Age 20 - 24'
     when lifespan between 25 and 29 then 'Age 25 - 29'
@@ -336,10 +340,21 @@ case
     when lifespan between 85 and 89 then 'Age 85 - 89'
     when lifespan between 90 and 94 then 'Age 90 - 94'
 	else 'Age 95+'
-end as age_groups,
-count(*) as number_of_artists_per_age
+end as age_groups
 from artist_lifespan
-group by age_groups
-order by age_groups;
+)
+select
+	aag.age_groups,
+	round(avg(ps.sale_price), 2) as avg_sale_price
+from 
+	product_size as ps
+join work as w on ps.work_id = w.work_id
+join artist_age_groups as aag on w.artist_id = aag.artist_id
+group by 
+	aag.age_groups
+order by 
+	aag.age_groups;
 
--- Error Code: 1055. Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'artist_lifespan.lifespan' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
+-- Error Code: 1140. In aggregated query without GROUP BY, expression #1 of SELECT list contains nonaggregated column 'artist_lifespan.artist_id'; this is incompatible with sql_mode=only_full_group_by
+
+
