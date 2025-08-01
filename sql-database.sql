@@ -396,12 +396,24 @@ order by
 -- ------------------------------------
 -- The subject of a painting significantly impacts its value.
 
-
+-- 1. group by # of paintings to view data
 select 
-subject,
-count(subject) as subject_count
+	subject,
+	count(subject) as subject_count
 from subject
 group by subject
 order by subject_count desc;
+
+-- 2. 
+select
+subject,
+count(subject) as subject_count,
+avg(sale_price) as avg_sale_price_per_subject
+from subject as s
+join product_size as ps on s.work_id = ps.work_id
+group by subject
+order by avg_sale_price_per_subject desc;
+
+
 
 
