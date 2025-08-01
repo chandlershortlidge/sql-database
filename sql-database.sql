@@ -276,3 +276,53 @@ order by sale_price desc;
 
 
 
+
+-- -----------------------------------
+-- Hypothesis 5: Scarcity and Lifespan
+-- -----------------------------------
+-- Is the sale price of an artist's work is correlated with their lifespan? 
+-- A shorter working life may lead to a smaller body of work, creating scarcity and driving up prices.
+
+-- 1. find artist lifespan using CTE
+
+with artist_lifespan as (
+	select
+		full_name,
+		(death - birth) as lifespan
+	from artist
+    where (death - birth) > 10 -- remove artist mistakenly labled as living only 5 years
+)
+select
+	full_name,
+	lifespan
+from artist_lifespan
+order by lifespan;
+
+
+with artist_lifespan as (
+	select
+		(death - birth) as lifespan
+	from artist
+)
+select
+	round(avg(lifespan)) as avg_lifespan
+from artist_lifespan
+where lifespan > 10
+order by avg_lifespan; -- avg lifespan of all artists is 66 years old
+
+-- 2. put lifespans into buckets 
+with artist_lifespan as (
+	select
+		full_name,
+		(death - birth) as lifespan
+	from artist
+    where (death - birth) > 10 -- remove artist mistakenly labled as living only 5 years
+)
+select
+	min(lifespan) as minium_age,
+    max(lifespan) as maximum_age
+from artist_lifespan
+order by lifespan;
+
+
+
