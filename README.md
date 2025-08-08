@@ -1,4 +1,4 @@
-# 🖼️ Famous Art Market Analytics
+# 🖼️ Art Analytics
 
 > Analyse how style, rarity, nationality and other factors influence the market value of famous paintings using **MySQL** and **Python**.
 
