@@ -32,8 +32,8 @@ This project loads a **famous\_paintings** relational database and puts six econ
 
 The heavy lifting happens in:
 
-- \`\` – sets up the schema, loads data and declares stored procedures and window‑function queries for each hypothesis.
-- \`\` – a Jupyter notebook that runs the queries, cleans the output with `pandas`, and visualises results with `matplotlib/seaborn`.
+- `sql/sql-database.sql` – sets up the schema, loads data, and declares window‑function queries for each hypothesis.
+- `notebooks/famous_art_data_visualizations.ipynb` – runs the queries, cleans the output with `pandas`, and visualises results with `matplotlib`/`seaborn`.
 
 ---
 
