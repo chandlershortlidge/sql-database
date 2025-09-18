@@ -122,7 +122,10 @@ Execute the cells; feel free to tweak queries or chart styles and re‑run.
 | Lifespan    | Works by artists who lived 65–74 years fetch the highest average price.                             |
 | Subject     | Biblical scenes and seascapes outperform portraits.                                                 |
 
-(*Full breakdown in the notebook; numbers will update as data grows.*)
+![Average Price Per Subject](docs/price_per_subject.png)
+
+> Landscape, Maritime, and Architecture paintings command the highest average prices, 
+> while Still Life and Floral works consistently underperform.
 
 ---
 
