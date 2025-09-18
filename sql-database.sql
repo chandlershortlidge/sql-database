@@ -108,23 +108,36 @@ limit 10;
 -- top 10 avg: Classicism, American Landscape, Orientalism, Art Nouvea, Neo-Classicism, Rococo, Surrealism, American Art, Romanticism, Naturalism
 
 -- 2. find median sale price per style to account for outliers
-with ranked_sales as (
-	select
-		w.style,
-		ps.sale_price,
-		ROW_NUMBER() OVER (PARTITION BY w.style ORDER BY ps.sale_price) AS rn,
-		COUNT(*) OVER (PARTITION BY w.style) AS total_count
-	from work as w
-	join product_size as ps on w.work_id = ps.work_id
-	where w.style is NOT NULL
+WITH ranked AS (
+  SELECT
+    w.style,
+    ps.sale_price,
+    ROW_NUMBER() OVER (PARTITION BY w.style ORDER BY ps.sale_price) AS rn,
+    COUNT(*)    OVER (PARTITION BY w.style)                         AS n
+  FROM work AS w
+  JOIN product_size AS ps
+    ON w.work_id = ps.work_id
+  WHERE w.style IS NOT NULL
+    AND ps.sale_price IS NOT NULL
+),
+middles AS (
+  SELECT
+    style,
+    sale_price
+  FROM ranked
+  WHERE rn IN (
+    FLOOR((n + 1) / 2),   -- lower middle
+    CEIL((n + 1) / 2)     -- upper middle (same as lower when n is odd)
+  )
 )
-select
-style,
-sale_price as median_sale_price
-from ranked_sales
-where rn = floor(total_count) / 2
-order by median_sale_price desc
-limit 10;
+SELECT
+  style,
+  ROUND(AVG(sale_price), 2) AS median_sale_price
+FROM middles
+GROUP BY style
+ORDER BY median_sale_price DESC
+LIMIT 10;
+
 
 -- top 10 median:  Classicism, Japanese Art, Neo-Classicism, Art Nouveau, Naturalism, Romanticism, Symbolism, Cubism, Nabi, Pointillism
 
